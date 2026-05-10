@@ -61,4 +61,18 @@ function createTaskItem(taskText, isCompleted) {
   return li;
 }
 
-// Add a new task when the button
+// Add a new task when the button is clicked
+addTaskBtn.addEventListener('click', function () {
+  const taskText = taskInput.value.trim();
+  if (taskText === '') return;
+  taskList.appendChild(createTaskItem(taskText, false));
+  saveTasks();
+  taskInput.value = '';
+});
+
+// Also add task on Enter key
+taskInput.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter') addTaskBtn.click();
+});
+
+loadTasks();
