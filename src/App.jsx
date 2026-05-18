@@ -16,6 +16,11 @@ function App() {
     setTasks(updatedTasks);
   };
 
+  const deleteTask = (index) => {
+    const updatedTasks = tasks.filter((_, i) => i !== index);
+    setTasks(updatedTasks);
+  };
+
   return (
     <div>
       <h1>Task Tracker</h1>
@@ -31,8 +36,13 @@ function App() {
             >
               {task.text}
             </span>
+
             <button onClick={() => toggleComplete(index)}>
               {task.completed ? "Undo" : "Complete"}
+            </button>
+
+            <button onClick={() => deleteTask(index)}>
+              Delete
             </button>
           </li>
         ))}
