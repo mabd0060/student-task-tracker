@@ -5,7 +5,15 @@ function App() {
   const [tasks, setTasks] = useState([]);
 
   const addTask = (task) => {
-    setTasks([...tasks, task]);
+    setTasks([...tasks, { text: task, completed: false }]);
+  };
+
+  const toggleComplete = (index) => {
+    const updatedTasks = tasks.map((task, i) =>
+      i === index ? { ...task, completed: !task.completed } : task
+    );
+
+    setTasks(updatedTasks);
   };
 
   return (
@@ -14,8 +22,19 @@ function App() {
       <TaskInput onAddTask={addTask} />
 
       <ul>
-        {tasks.map((t, index) => (
-          <li key={index}>{t}</li>
+        {tasks.map((task, index) => (
+          <li key={index}>
+            <span
+              style={{
+                textDecoration: task.completed ? "line-through" : "none",
+              }}
+            >
+              {task.text}
+            </span>
+            <button onClick={() => toggleComplete(index)}>
+              {task.completed ? "Undo" : "Complete"}
+            </button>
+          </li>
         ))}
       </ul>
     </div>
