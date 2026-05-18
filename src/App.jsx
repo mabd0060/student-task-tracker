@@ -1,30 +1,74 @@
 import { useState, useEffect } from "react";
 import TaskInput from "./components/TaskInput";
+import { supabase } from "./services/supabase";
 
 function App() {
-  const [tasks, setTasks] = useState(() => {
-    const savedTasks = localStorage.getItem("tasks");
-    return savedTasks ? JSON.parse(savedTasks) : [];
-  });
+  // ✅ State FIRST
+  const [tasks, setTasks] = useState([]);
 
+  // ✅ Fetch from Supabase on load
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    fetchTasks();
+  }, []);
 
-  const addTask = (task) => {
-    setTasks([...tasks, { text: task, completed: false }]);
+  const fetchTasks = async () => {
+    const { data, error } = await supabase
+      .from("tasks")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching tasks:", error);
+      return;
+    }
+
+    if (data) {
+      setTasks(data);
+    }
   };
 
-  const toggleComplete = (index) => {
-    const updatedTasks = tasks.map((task, i) =>
-      i === index ? { ...task, completed: !task.completed } : task
-    );
-    setTasks(updatedTasks);
+
+  // ✅ Add task (still local for now)
+  const addTask = async (task) => {
+    const { data, error } = await supabase
+      .from("tasks")
+      .insert([{ text: task, completed: false }])
+      .select();
+
+    if (error) {
+      console.error("Error adding task:", error);
+      return;
+    }
+
+    setTasks([data[0], ...tasks]);
   };
 
-  const deleteTask = (index) => {
-    const updatedTasks = tasks.filter((_, i) => i !== index);
-    setTasks(updatedTasks);
+  const toggleComplete = async (task) => {
+    const { error } = await supabase
+      .from("tasks")
+      .update({ completed: !task.completed })
+      .eq("id", task.id);
+
+    if (error) {
+      console.error("Error updating task:", error);
+      return;
+    }
+
+    fetchTasks();
+  };
+
+  const deleteTask = async (id) => {
+    const { error } = await supabase
+      .from("tasks")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error deleting task:", error);
+      return;
+    }
+
+    fetchTasks();
   };
 
   return (
@@ -33,8 +77,8 @@ function App() {
       <TaskInput onAddTask={addTask} />
 
       <ul>
-        {tasks.map((task, index) => (
-          <li key={index}>
+        {tasks.map((task) => (
+          <li key={task.id}>
             <span
               style={{
                 textDecoration: task.completed ? "line-through" : "none",
@@ -43,11 +87,11 @@ function App() {
               {task.text}
             </span>
 
-            <button onClick={() => toggleComplete(index)}>
+            <button onClick={() => toggleComplete(task)}>
               {task.completed ? "Undo" : "Complete"}
             </button>
 
-            <button onClick={() => deleteTask(index)}>
+            <button onClick={() => deleteTask(task.id)}>
               Delete
             </button>
           </li>
