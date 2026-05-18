@@ -1,8 +1,23 @@
-function TaskInput() {
+import { useState } from "react";
+
+function TaskInput({ onAddTask }) {
+  const [task, setTask] = useState("");
+
+  const handleAdd = () => {
+    if (task.trim() === "") return;
+    onAddTask(task);
+    setTask("");
+  };
+
   return (
     <div>
-      <input type="text" placeholder="Enter task" />
-      <button>Add</button>
+      <input
+        type="text"
+        placeholder="Enter task"
+        value={task}
+        onChange={(e) => setTask(e.target.value)}
+      />
+      <button onClick={handleAdd}>Add</button>
     </div>
   );
 }
